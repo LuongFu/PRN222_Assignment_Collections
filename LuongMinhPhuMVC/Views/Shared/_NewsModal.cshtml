@@ -1,0 +1,83 @@
+﻿<div class="modal fade" id="newsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 id="modalTitle">News</h5>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <form id="newsForm" method="post" enctype="multipart/form-data">
+
+                    <input type="hidden"
+                           name="NewsArticleId"
+                           id="NewsArticleId" />
+
+                    <div class="form-group">
+                        <label>Title</label>
+                        <input name="NewsTitle"
+                               id="NewsTitle"
+                               class="form-control" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Headline</label>
+                        <input name="Headline"
+                               id="Headline"
+                               class="form-control" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Content</label>
+                        <textarea name="NewsContent"
+                                  id="NewsContent"
+                                  class="form-control"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Source</label>
+                        <input name="NewsSource"
+                               id="NewsSource"
+                               class="form-control" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Image</label>
+                        <input type="file"
+                               name="ImageFile"
+                               class="form-control" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select name="CategoryId"
+                                id="CategoryId"
+                                class="form-control"
+                                asp-items="ViewBag.CategoryId">
+                        </select>
+                    </div>
+                    <label>Tags</label>
+                    <select name="selectedTags"
+                            multiple
+                            class="form-control"
+                            asp-items="ViewBag.Tags">
+                    </select>
+
+                    <br />
+
+                    <button type="submit"
+                            class="btn btn-success">
+                        Save
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+    </div>
+</div>

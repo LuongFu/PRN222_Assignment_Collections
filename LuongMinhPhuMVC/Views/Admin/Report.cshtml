@@ -1,0 +1,15 @@
+﻿<h2>Report by Period</h2>
+
+<form asp-action="Report" method="post">
+    <div>
+        <label>Start Date:</label>
+        <input type="date" name="startDate" required />
+    </div>
+
+    <div>
+        <label>End Date:</label>
+        <input type="date" name="endDate" required />
+    </div>
+
+    <button type="submit">Generate Report</button>
+</form>

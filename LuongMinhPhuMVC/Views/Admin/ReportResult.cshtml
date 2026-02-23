@@ -1,0 +1,27 @@
+﻿@model IEnumerable<BusinessObjects.NewsArticle>
+
+<h2>Report Result</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Created Date</th>
+            <th>Category</th>
+            <th>Created By</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.NewsTitle</td>
+                <td>@item.CreatedDate</td>
+                <td>@item.Category?.CategoryName</td>
+                <td>@item.CreatedBy?.AccountName</td>
+                <td>@(item.NewsStatus == true ? "Approved" : "Pending")</td>
+            </tr>
+        }
+    </tbody>
+</table>

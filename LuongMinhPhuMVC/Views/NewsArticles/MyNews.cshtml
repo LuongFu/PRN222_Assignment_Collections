@@ -1,0 +1,88 @@
+﻿@model IEnumerable<BusinessObjects.NewsArticle>
+
+@{
+    ViewData["Title"] = "My News History";
+}
+
+<h2>My News History</h2>
+<div class="mb-3">
+    <span class="badge bg-dark">
+        Total Articles: @Model.Count()
+    </span>
+
+    <span class="badge bg-success">
+        Approved: @Model.Count(n => n.NewsStatus == true)
+    </span>
+
+    <span class="badge bg-warning text-dark">
+        Pending: @Model.Count(n => n.NewsStatus != true)
+    </span>
+</div>
+
+<table class="table table-bordered table-hover align-middle">
+    <thead class="table-dark">
+        <tr>
+            <th>Title</th>
+            <th>Category</th>
+            <th>Tags</th>
+            <th>Status</th>
+            <th>Created Date</th>
+            <th width="180">Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    <strong>@item.NewsTitle</strong>
+                </td>
+
+                <td>
+                    <span class="badge bg-primary">
+                        @item.Category?.CategoryName
+                    </span>
+                </td>
+
+                <td>
+                    @if (item.Tags != null && item.Tags.Any())
+                    {
+                        foreach (var tag in item.Tags)
+                        {
+                            <span class="badge bg-secondary me-1">
+                                @tag.TagName
+                            </span>
+                        }
+                    }
+                    else
+                    {
+                        <span class="text-muted">No Tags</span>
+                    }
+                </td>
+
+                <td>
+                    @if (item.NewsStatus == true)
+                    {
+                        <span class="badge bg-success">Approved</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-warning text-dark">Pending</span>
+                    }
+                </td>
+
+                <td>
+                    @item.CreatedDate?.ToString("dd/MM/yyyy")
+                </td>
+
+                <td>
+                    <a asp-action="Details"
+                       asp-route-id="@item.NewsArticleId"
+                       class="btn btn-sm btn-outline-primary">
+                        View
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

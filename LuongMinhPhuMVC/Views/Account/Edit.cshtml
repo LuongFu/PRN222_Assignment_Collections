@@ -1,0 +1,23 @@
+﻿@model BusinessObjects.SystemAccount
+
+<h2>Edit Account</h2>
+
+<form asp-action="Edit">
+    <input type="hidden" asp-for="AccountId" />
+
+    <div class="mb-3">
+        <label>Email</label>
+        <input asp-for="AccountEmail" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Role</label>
+        <select asp-for="AccountRole" class="form-control">
+            <option value="1">Staff</option>
+            <option value="2">Lecturer</option>
+        </select>
+    </div>
+
+    <button class="btn btn-primary">Update</button>
+    <a asp-action="Index" class="btn btn-secondary">Back</a>
+</form>

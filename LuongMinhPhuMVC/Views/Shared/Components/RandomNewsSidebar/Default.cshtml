@@ -1,0 +1,22 @@
+﻿@model IEnumerable<BusinessObjects.NewsArticle>
+@{
+    var session = Context.Session.GetInt32("USERID");
+}
+@if (session != null)
+{
+    @foreach (var item in Model)
+    {
+        <div class="random-news-card">
+            <img src="https://picsum.photos/100" />
+            <div>
+                <a class="news-title"
+                   asp-controller="NewsArticles"
+                   asp-action="Details"
+                   asp-route-id="@item.NewsArticleId">
+                    @item.NewsTitle
+                </a>
+            </div>
+        </div>
+    }
+
+}

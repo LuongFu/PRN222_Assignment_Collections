@@ -1,0 +1,44 @@
+﻿@model BusinessObjects.SystemAccount
+
+@{
+    ViewData["Title"] = "My Profile";
+}
+
+<h2>My Profile</h2>
+
+@if (ViewBag.Message != null)
+{
+    <div class="alert alert-success">
+        @ViewBag.Message
+    </div>
+}
+
+<form asp-action="Index" method="post">
+    <input type="hidden" asp-for="AccountId" />
+
+    <div class="mb-3">
+        <label>Name</label>
+        <input asp-for="AccountName" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Email</label>
+        <input asp-for="AccountEmail" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>New Password (leave blank if not change)</label>
+        <input type="password" name="NewPassword" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Role</label>
+        <input value="@Model.AccountRole"
+               class="form-control"
+               readonly />
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        Update Profile
+    </button>
+</form>

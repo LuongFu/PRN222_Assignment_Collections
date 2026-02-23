@@ -1,0 +1,19 @@
+﻿using BusinessObjects;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Repositories
+{
+    public interface INewsArticleRepository
+    {
+        IEnumerable<NewsArticle> GetAll();
+        NewsArticle GetById(string id);
+        void Add(NewsArticle news);
+        void Update(NewsArticle news);
+        void Delete(string id);
+        IEnumerable<NewsArticle> GetReportByPeriod(DateTime start, DateTime end);
+    }
+}

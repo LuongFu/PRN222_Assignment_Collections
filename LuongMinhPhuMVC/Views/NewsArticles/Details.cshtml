@@ -1,0 +1,10 @@
+﻿<h2>@Model.NewsTitle</h2>
+<p><i>@Model.Headline</i></p>
+<p>
+    Category: <b>@Model.Category?.CategoryName</b> |
+    Created: @Model.CreatedDate?.ToString("dd/MM/yyyy")
+</p>
+<hr />
+<div>
+    @Html.Raw(Model.NewsContent)
+</div>

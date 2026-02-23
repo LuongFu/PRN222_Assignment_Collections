@@ -1,0 +1,17 @@
+﻿@model IEnumerable<BusinessObjects.Category>
+@{
+    var session = Context.Session.GetInt32("USERID");
+}
+@if (session != null)
+{
+    @foreach (var item in Model)
+    {
+        <li>
+            <a asp-controller="NewsArticles"
+               asp-action="ByCategory"
+               asp-route-id="@item.CategoryId">
+                @item.CategoryName
+            </a>
+        </li>
+    }
+}
