@@ -182,7 +182,7 @@ Update the appsettings.json file:
 
 ```
 "ConnectionStrings": {
-  "DefaultConnection": "Server=.;Database=FUNewsManagement;Trusted_Connection=True;TrustServerCertificate=True;"
+  "DefaultConnection": "Server=.;Database=FUNewsManagement;Uid=sa;Pwd=123;TrustServerCertificate=True;"
 }
 ```
 
