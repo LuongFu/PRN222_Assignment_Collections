@@ -16,18 +16,27 @@ namespace DataAccessObjects
         {
             return _context.NewsArticles
                            .Include(n => n.Category)
+                           .Include(n => n.CreatedBy)
+                           .Include(n => n.Tags)
                            .ToList();
         }
         public IEnumerable<NewsArticle> GetNewsByCatId(short categoryID)
         {
             return _context.NewsArticles
-                .Include(id => id.CategoryId)
+                .Include(n => n.Category)
+                .Include(n => n.CreatedBy)
+                .Include(n => n.Tags)
+                .Where(n => n.CategoryId == categoryID)
                 .ToList();
         }
 
         public NewsArticle GetById(string id)
         {
-            return _context.NewsArticles.Find(id);
+            return _context.NewsArticles
+                .Include(n => n.Category)
+                .Include(n => n.CreatedBy)
+                .Include(n => n.Tags)
+                .FirstOrDefault(n => n.NewsArticleId == id);
         }
 
         public void Add(NewsArticle news)
@@ -59,6 +68,18 @@ namespace DataAccessObjects
                             .Where(n => n.CreatedDate >= start && n.CreatedDate <= end)
                             .OrderByDescending(n => n.CreatedDate)
                             .ToList();
+        }
+        public void Approve(string id, short adminId)
+        {
+            var news = _context.NewsArticles.Find(id);
+            if (news != null)
+            {
+                news.NewsStatus = true;
+                news.UpdatedById = adminId;
+                news.ModifiedDate = DateTime.Now;
+                _context.Update(news);
+                _context.SaveChanges();
+            }
         }
     }
 }

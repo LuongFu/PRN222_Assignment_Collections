@@ -1,17 +1,48 @@
 ﻿@model IEnumerable<BusinessObjects.Category>
 @{
-    var session = Context.Session.GetInt32("USERID");
-}
-@if (session != null)
-{
-    @foreach (var item in Model)
+    var currentId = ViewBag.CurrentCategoryId as short?;
+    var rootCategories = Model.Where(c => c.ParentCategoryId == null).ToList();
+    
+    // Fallback: If no categories have ParentCategoryId == null, but there ARE categories, show them all.
+    if (!rootCategories.Any() && Model.Any())
     {
-        <li>
-            <a asp-controller="NewsArticles"
-               asp-action="ByCategory"
-               asp-route-id="@item.CategoryId">
-                @item.CategoryName
-            </a>
-        </li>
+        rootCategories = Model.ToList();
     }
+}
+
+@foreach (var parent in rootCategories)
+{
+    var isParentActive = currentId == parent.CategoryId;
+    var children = Model.Where(c => c.ParentCategoryId == parent.CategoryId && c.CategoryId != parent.CategoryId).ToList();
+    
+    <li class="nav-item mb-2">
+        <a asp-controller="Categories" 
+           asp-action="Details" 
+           asp-route-id="@parent.CategoryId"
+           class="d-flex justify-content-between align-items-center @(isParentActive ? "fw-bold text-primary" : "text-dark") text-decoration-none">
+            <span>@parent.CategoryName</span>
+            @if (children.Any())
+            {
+                <span class="badge bg-light text-muted border rounded-pill">@children.Count</span>
+            }
+        </a>
+
+        @if (children.Any())
+        {
+            <ul class="list-unstyled ms-3 mt-1 small">
+                @foreach (var child in children)
+                {
+                    var isChildActive = currentId == child.CategoryId;
+                    <li class="mb-1">
+                        <a asp-controller="Categories" 
+                           asp-action="Details" 
+                           asp-route-id="@child.CategoryId"
+                           class="@(isChildActive ? "fw-bold text-primary" : "text-muted") text-decoration-none">
+                            • @child.CategoryName
+                        </a>
+                    </li>
+                }
+            </ul>
+        }
+    </li>
 }

@@ -1,27 +1,27 @@
 ﻿using BusinessObjects;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Services;
 
 namespace LuongMinhPhuMVC.Controllers
 {
     public class ProfileController : Controller
     {
-        private readonly FunewsManagementContext _context;
+        private readonly IAccountService _accountService;
 
-        public ProfileController(FunewsManagementContext context)
+        public ProfileController(IAccountService accountService)
         {
-            _context = context;
+            _accountService = accountService;
         }
 
         // GET: Profile
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
             var userId = HttpContext.Session.GetInt32("USERID");
             if (userId == null)
-                return RedirectToAction("Login", "Accounts");
+                return RedirectToAction("Login", "Account");
 
-            var user = await _context.SystemAccounts
-                .FirstOrDefaultAsync(u => u.AccountId == userId);
+            var user = _accountService.GetAccountById((short)userId.Value);
 
             if (user == null)
                 return NotFound();
@@ -32,14 +32,13 @@ namespace LuongMinhPhuMVC.Controllers
         // POST: Profile Update
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Index(SystemAccount model, string? NewPassword)
+        public IActionResult Index(SystemAccount model, string? NewPassword)
         {
             var userId = HttpContext.Session.GetInt32("USERID");
             if (userId == null)
-                return RedirectToAction("Login", "Accounts");
+                return RedirectToAction("Login", "Account");
 
-            var user = await _context.SystemAccounts
-                .FirstOrDefaultAsync(u => u.AccountId == userId);
+            var user = _accountService.GetAccountById((short)userId.Value);
 
             if (user == null)
                 return NotFound();
@@ -52,10 +51,9 @@ namespace LuongMinhPhuMVC.Controllers
                 if (!string.IsNullOrEmpty(NewPassword))
                 {
                     user.AccountPassword = NewPassword;
-                    // Nếu muốn chuyên nghiệp hơn thì hash password
                 }
 
-                await _context.SaveChangesAsync();
+                _accountService.Update(user);
 
                 ViewBag.Message = "Profile updated successfully!";
             }

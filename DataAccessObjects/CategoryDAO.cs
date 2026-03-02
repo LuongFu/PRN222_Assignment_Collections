@@ -18,7 +18,10 @@ namespace DataAccessObjects
 
         public IEnumerable<Category> GetCategories()
         {
-            return _context.Categories.ToList();
+            return _context.Categories
+                .Include(c => c.ParentCategory)
+                .Include(c => c.NewsArticles)
+                .ToList();
         }
         public Category AddCategory(Category category)
         {
@@ -41,6 +44,18 @@ namespace DataAccessObjects
                 _context.SaveChanges();
             }
             return category;
+        }
+        public Category GetCategoryById(short categoryId)
+        {
+            return _context.Categories
+                .Include(c => c.ParentCategory)
+                .Include(c => c.NewsArticles)
+                .FirstOrDefault(c => c.CategoryId == categoryId);
+        }
+
+        public bool CategoryExists(short categoryId)
+        {
+            return _context.Categories.Any(e => e.CategoryId == categoryId);
         }
     }
 }

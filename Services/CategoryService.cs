@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 
 namespace Services
 {
-    public class CatergoryService : ICategoryService
+    public class CategoryService : ICategoryService
     {
         private readonly ICategoryRepository _categoryRepository;
-        public CatergoryService(ICategoryRepository categoryRepository)
+        public CategoryService(ICategoryRepository categoryRepository)
         {
             _categoryRepository = categoryRepository;
         }
@@ -23,5 +23,11 @@ namespace Services
             => _categoryRepository.UpdateCategory(category);
         public Category DeleteCategory(short categoryId)
             => _categoryRepository.DeleteCategory(categoryId);
+
+        public Category GetCategoryById(short categoryId)
+            => _categoryRepository.GetCategoryById(categoryId);
+
+        public bool CategoryExists(short categoryId)
+            => _categoryRepository.CategoryExists(categoryId);
     }
 }

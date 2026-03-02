@@ -13,13 +13,11 @@ namespace LuongMinhPhuMVC.Controllers
     public class AccountController : Controller
     {
         private readonly IConfiguration _config;
-        private readonly IAccountRepository _repo;
         private readonly IAccountService _accountService;
 
-        public AccountController(IConfiguration config, IAccountRepository repo, IAccountService accountService)
+        public AccountController(IConfiguration config, IAccountService accountService)
         {
             _config = config;
-            _repo = repo;
             _accountService = accountService;
         }
 
@@ -39,7 +37,7 @@ namespace LuongMinhPhuMVC.Controllers
                 return RedirectToAction("Index", "Admin");
             }
 
-            var account = _repo.Login(email, password);
+            var account = _accountService.Login(email, password);
             if (account == null) return View();
 
             HttpContext.Session.SetInt32("ROLE", (int)account.AccountRole);
@@ -88,7 +86,7 @@ namespace LuongMinhPhuMVC.Controllers
         {
             if (!IsAdmin()) return RedirectToAction("Login", "Account");
 
-            var accounts = _repo.GetAll();
+            var accounts = _accountService.GetAll();
 
             if (!string.IsNullOrEmpty(search))
             {
@@ -114,7 +112,7 @@ namespace LuongMinhPhuMVC.Controllers
             if (!ModelState.IsValid)
                 return View(account);
 
-            _repo.Add(account);
+            _accountService.Add(account);
             return RedirectToAction(nameof(Index));
         }
 
@@ -126,7 +124,7 @@ namespace LuongMinhPhuMVC.Controllers
             if (!ModelState.IsValid)
                 return View(account);
 
-            _repo.Update(account);
+            _accountService.Update(account);
             return RedirectToAction(nameof(Index));
         }
 
@@ -134,7 +132,7 @@ namespace LuongMinhPhuMVC.Controllers
         {
             if (!IsAdmin()) return RedirectToAction("Login", "Account");
 
-            var account = _repo.GetAccountById(id);
+            var account = _accountService.GetAccountById(id);
             if (account == null) return NotFound();
 
             return View(account);
@@ -144,7 +142,7 @@ namespace LuongMinhPhuMVC.Controllers
         {
             if (!IsAdmin()) return RedirectToAction("Login", "Account");
 
-            var account = _repo.GetAccountById(id);
+            var account = _accountService.GetAccountById(id);
             if (account == null) return NotFound();
 
             return View(account);
@@ -155,7 +153,7 @@ namespace LuongMinhPhuMVC.Controllers
         {
             if (!IsAdmin()) return RedirectToAction("Login", "Account");
 
-            _repo.Delete(id);
+            _accountService.Delete(id);
             return RedirectToAction(nameof(Index));
         }
         public IActionResult Logout()

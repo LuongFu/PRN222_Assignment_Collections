@@ -46,5 +46,9 @@ namespace Repositories
         {
             return _newsArticleDAO.GetReportByPeriod(start, end);
         }
+        public void Approve(string id, short adminId)
+        {
+            _newsArticleDAO.Approve(id, adminId);
+        }
     }
 }

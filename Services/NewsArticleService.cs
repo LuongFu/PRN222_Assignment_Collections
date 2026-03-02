@@ -44,5 +44,9 @@ namespace Services
         {
             return _newsArticleRepo.GetReportByPeriod(start, end);
         }
+        public void Approve(string id, short adminId)
+        {
+            _newsArticleRepo.Approve(id, adminId);
+        }
     }
 }

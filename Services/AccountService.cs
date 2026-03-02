@@ -51,11 +51,24 @@ namespace Services
 
             if (account == null)
             {
-                return new ExternalLoginResult
+                // Auto-register new account
+                var allAccounts = iAccountRepository.GetAll();
+                short nextId = 1;
+                if (allAccounts.Any())
                 {
-                    IsSuccess = false,
-                    Error = "Google account is not registered"
+                    nextId = (short)(allAccounts.Max(a => a.AccountId) + 1);
+                }
+
+                account = new SystemAccount
+                {
+                    AccountId = nextId,
+                    AccountEmail = email,
+                    AccountName = email.Split('@')[0], // Use email prefix as name
+                    AccountRole = 2, // Default to Lecturer
+                    AccountPassword = Guid.NewGuid().ToString().Substring(0, 8) // Random password
                 };
+
+                iAccountRepository.Add(account);
             }
 
             return new ExternalLoginResult
@@ -89,6 +102,10 @@ namespace Services
         public SystemAccount Delete(short accountID)
         {
             return iAccountRepository.Delete(accountID);
+        }
+        public IEnumerable<SystemAccount> GetAll()
+        {
+            return iAccountRepository.GetAll();
         }
     }
 }

@@ -15,12 +15,24 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<FunewsManagementContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("FUNewsManagement")));
 
+// --- Register Layers ---
+
+// Data Access Objects (DAOs)
 builder.Services.AddScoped<NewsArticleDAO>();
 builder.Services.AddScoped<AccountDAO>();
+builder.Services.AddScoped<CategoryDAO>();
+builder.Services.AddScoped<TagDAO>();
+
+// Repositories
 builder.Services.AddScoped<INewsArticleRepository, NewsArticleRepository>();
-builder.Services.AddScoped<INewsArticleService, NewsArticleService>();
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<ITagRepository, TagRepository>();
+
+// Business Services
+builder.Services.AddScoped<INewsArticleService, NewsArticleService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<CloudinaryService>();
 
 builder.Services.AddDistributedMemoryCache(); // them

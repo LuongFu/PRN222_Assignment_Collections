@@ -1,78 +1,96 @@
 ﻿@model IEnumerable<BusinessObjects.Category>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Categories";
 }
 
-<h1>Index</h1>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">Categories</h2>
+        <p class="text-muted small mb-0">List of all news categories available in the system.</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary rounded-pill px-4">
+        + Add New Category
+    </a>
+</div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table table-bordered table-hover align-middle">
-    <thead class="table-dark">
-        <tr>
-            <th>Name</th>
-            <th>Description</th>
-            <th>Status</th>
-            <th>Parent</th>
-            <th>#News</th>
-            <th width="180">Action</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td><strong>@item.CategoryName</strong></td>
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger rounded-4 border-0 shadow-sm mb-4">
+        @TempData["Error"]
+    </div>
+}
 
-                <td>@item.CategoryDesciption</td>
+<div class="card border-0 shadow-sm rounded-4">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="bg-light text-muted small fw-bold">
+                <tr>
+                    <th class="ps-4">Category</th>
+                    <th>Status</th>
+                    <th class="text-center">News</th>
+                    <th class="pe-4 text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td class="ps-4">
+                            <div class="fw-bold text-dark">@item.CategoryName</div>
+                            <div class="text-muted small">
+                                @if (item.ParentCategory != null)
+                                {
+                                    <span class="text-primary">Sub-category of @item.ParentCategory.CategoryName</span>
+                                    @:• 
+                                }
+                                @(string.IsNullOrEmpty(item.CategoryDesciption) ? "No description" : item.CategoryDesciption)
+                            </div>
+                        </td>
+                        <td>
+                            @if (item.IsActive == true)
+                            {
+                                <span class="badge bg-success rounded-pill px-3">Active</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-light text-muted border rounded-pill px-3">Inactive</span>
+                            }
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-primary rounded-pill">
+                                @(item.NewsArticles?.Count ?? 0)
+                            </span>
+                        </td>
+                        <td class="pe-4 text-end">
+                            <div class="btn-group gap-1">
+                                <a asp-action="Edit" asp-route-id="@item.CategoryId" class="btn btn-sm btn-outline-secondary border-0" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a asp-action="Details" asp-route-id="@item.CategoryId" class="btn btn-sm btn-outline-secondary border-0" title="View">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                @if ((item.NewsArticles?.Count ?? 0) == 0)
+                                {
+                                    <a asp-action="Delete" asp-route-id="@item.CategoryId" class="btn btn-sm btn-outline-danger border-0" title="Delete">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span class="d-inline-block" title="Articles exist">
+                                        <button class="btn btn-sm btn-outline-secondary border-0 opacity-25" disabled>
+                                            <i class="bi bi-lock"></i>
+                                        </button>
+                                    </span>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
 
-                <td>
-                    @if (item.IsActive == true)
-                    {
-                        <span class="badge bg-success">Active</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-secondary">Inactive</span>
-                    }
-                </td>
-
-                <td>
-                    @(item.ParentCategory?.CategoryName ?? "Root")
-                </td>
-
-                <td>
-                    <span class="badge bg-info">
-                        @(item.NewsArticles?.Count ?? 0)
-                    </span>
-                </td>
-
-                <td>
-                    <a asp-action="Edit"
-                       asp-route-id="@item.CategoryId"
-                       class="btn btn-warning btn-sm">Edit</a>
-
-                    <a asp-action="Details"
-                       asp-route-id="@item.CategoryId"
-                       class="btn btn-primary btn-sm">View</a>
-
-                    @if ((item.NewsArticles?.Count ?? 0) == 0)
-                    {
-                        <a asp-action="Delete"
-                           asp-route-id="@item.CategoryId"
-                           class="btn btn-danger btn-sm">Delete</a>
-                    }
-                    else
-                    {
-                        <button class="btn btn-danger btn-sm" disabled>
-                            Delete
-                        </button>
-                    }
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
 

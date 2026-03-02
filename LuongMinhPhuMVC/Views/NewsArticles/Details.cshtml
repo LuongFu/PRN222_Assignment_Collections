@@ -1,10 +1,80 @@
-﻿<h2>@Model.NewsTitle</h2>
-<p><i>@Model.Headline</i></p>
-<p>
-    Category: <b>@Model.Category?.CategoryName</b> |
-    Created: @Model.CreatedDate?.ToString("dd/MM/yyyy")
-</p>
-<hr />
-<div>
-    @Html.Raw(Model.NewsContent)
+﻿@model BusinessObjects.NewsArticle
+
+@{
+    ViewData["Title"] = Model.NewsTitle;
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">News</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">@Model.Category?.CategoryName</li>
+                </ol>
+            </nav>
+
+            <article class="news-article">
+                <header class="mb-5">
+                    <h2 class="display-4 fw-bold mb-3">@Model.NewsTitle</h2>
+                    <p class="lead text-muted fs-4">@Model.Headline</p>
+                    
+                    <div class="d-flex align-items-center mt-4">
+                        <div class="ms-0">
+                            <h6 class="mb-0 fw-bold">@Model.CreatedBy?.AccountEmail</h6>
+                            <small class="text-muted">
+                                Published on @Model.CreatedDate?.ToString("MMMM dd, yyyy") 
+                                @if (Model.ModifiedDate != null)
+                                {
+                                    <span>(Updated: @Model.ModifiedDate?.ToString("MMMM dd, yyyy"))</span>
+                                }
+                            </small>
+                        </div>
+                    </div>
+                </header>
+
+                @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                {
+                    <figure class="mb-5">
+                        <img src="@Model.ImageUrl" class="img-fluid rounded-4 shadow-sm w-100" style="max-height: 500px; object-fit: cover;" alt="@Model.NewsTitle">
+                    </figure>
+                }
+
+                <div class="article-content fs-5 lh-lg mb-5">
+                    @Html.Raw(Model.NewsContent)
+                </div>
+
+                <div class="mt-5 pt-4 border-top">
+                    <h6 class="text-uppercase fw-bold small text-muted mb-3">Tags</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        @if (Model.Tags != null && Model.Tags.Any())
+                        {
+                            foreach (var tag in Model.Tags)
+                            {
+                                <span class="badge bg-light text-dark border px-3 py-2 rounded-pill">#@tag.TagName</span>
+                            }
+                        }
+                        else
+                        {
+                            <span class="text-muted italic">No tags</span>
+                        }
+                    </div>
+                </div>
+
+                <div class="mt-5 d-flex gap-2">
+                    <a asp-action="Index" class="btn btn-outline-secondary px-4 rounded-pill">Back to News</a>
+                </div>
+            </article>
+        </div>
+    </div>
 </div>
+
+<style>
+    .article-content img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        margin: 20px 0;
+    }
+</style>

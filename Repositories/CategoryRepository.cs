@@ -11,6 +11,10 @@ namespace Repositories
     public class CategoryRepository : ICategoryRepository
     {
         private readonly CategoryDAO _categoryDAO;
+        public CategoryRepository(CategoryDAO categoryDAO)
+        {
+            _categoryDAO = categoryDAO;
+        }
         public Category AddCategory(Category category)
         {
             return _categoryDAO.AddCategory(category);
@@ -29,6 +33,16 @@ namespace Repositories
         public Category UpdateCategory(Category category)
         {
             return _categoryDAO.UpdateCategory(category);
+        }
+
+        public Category GetCategoryById(short categoryId)
+        {
+            return _categoryDAO.GetCategoryById(categoryId);
+        }
+
+        public bool CategoryExists(short categoryId)
+        {
+            return _categoryDAO.CategoryExists(categoryId);
         }
     }
 }

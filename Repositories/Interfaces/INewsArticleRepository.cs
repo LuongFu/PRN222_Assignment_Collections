@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Services
+namespace Repositories
 {
-    public interface INewsArticleService
+    public interface INewsArticleRepository
     {
         IEnumerable<NewsArticle> GetAll();
         NewsArticle GetById(string id);
@@ -15,6 +15,6 @@ namespace Services
         void Update(NewsArticle news);
         void Delete(string id);
         IEnumerable<NewsArticle> GetReportByPeriod(DateTime start, DateTime end);
-
+        void Approve(string id, short adminId);
     }
 }

@@ -18,5 +18,6 @@ namespace Services
         SystemAccount Add(SystemAccount account);
         SystemAccount Update(SystemAccount account);
         SystemAccount Delete(short accountID);
+        IEnumerable<SystemAccount> GetAll();
     }
 }

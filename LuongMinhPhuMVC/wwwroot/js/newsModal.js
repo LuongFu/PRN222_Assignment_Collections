@@ -22,7 +22,7 @@ function openCreateModal() {
     modal.show();
 }
 
-function openEditModal(id, title, headline, content, source, categoryId) {
+function openEditModal(id, imageUrl, title, headline, content, source, categoryId) {
 
     document.getElementById('modalTitle').innerText = "Edit News";
     document.getElementById('newsForm').action = '/NewsArticles/Edit/' + id;

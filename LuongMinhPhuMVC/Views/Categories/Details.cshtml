@@ -36,6 +36,42 @@
         </dd>
     </dl>
 </div>
+
+@if (Model.NewsArticles != null && Model.NewsArticles.Any())
+{
+    <div class="mt-5">
+        <h4>News in this Category</h4>
+        <hr />
+        <div class="row row-cols-1 row-cols-md-2 g-4">
+            @foreach (var news in Model.NewsArticles)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow-sm border-0">
+                        @if (!string.IsNullOrEmpty(news.ImageUrl))
+                        {
+                            <img src="@news.ImageUrl" class="card-img-top" style="height: 180px; object-fit: cover;" alt="@news.NewsTitle">
+                        }
+                        <div class="card-body">
+                            <h5 class="card-title">@news.NewsTitle</h5>
+                            <p class="card-text text-truncate">@news.Headline</p>
+                            <a asp-controller="NewsArticles" asp-action="Details" asp-route-id="@news.NewsArticleId" class="btn btn-primary btn-sm">Read More</a>
+                        </div>
+                        <div class="card-footer text-muted small">
+                            Posted on @news.CreatedDate?.ToString("dd MMM yyyy")
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <div class="alert alert-info mt-4">
+        No news articles found in this category.
+    </div>
+}
+
 <div>
     <a asp-action="Edit" asp-route-id="@Model?.CategoryId">Edit</a> |
     <a asp-action="Index">Back to List</a>

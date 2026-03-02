@@ -6,40 +6,33 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using BusinessObjects;
+using Services;
 
 namespace LuongMinhPhuMVC.Controllers
 {
     public class CategoriesController : Controller
     {
-        private readonly FunewsManagementContext _context;
+        private readonly ICategoryService _categoryService;
 
-        public CategoriesController(FunewsManagementContext context)
+        public CategoriesController(ICategoryService categoryService)
         {
-            _context = context;
+            _categoryService = categoryService;
         }
 
         // GET: Categories
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-            var funewsManagementContext = _context.Categories.Include(c => c.ParentCategory).Include(c => c.NewsArticles);
-            return View(await funewsManagementContext.ToListAsync());
+            var categories = _categoryService.GetCategories();
+            return View(categories);
         }
 
         // GET: Categories/Details/5
-        public async Task<IActionResult> Details(short? id)
+        public IActionResult Details(short? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
-            var category = await _context.Categories
-                .Include(c => c.ParentCategory)
-                .FirstOrDefaultAsync(m => m.CategoryId == id);
-            if (category == null)
-            {
-                return NotFound();
-            }
+            var category = _categoryService.GetCategoryById(id.Value);
+            if (category == null) return NotFound();
 
             return View(category);
         }
@@ -47,7 +40,7 @@ namespace LuongMinhPhuMVC.Controllers
         // GET: Categories/Create
         public IActionResult Create()
         {
-            ViewData["ParentCategoryId"] = new SelectList(_context.Categories, "CategoryId", "CategoryId");
+            ViewData["ParentCategoryId"] = new SelectList(_categoryService.GetCategories(), "CategoryId", "CategoryName");
             return View();
         }
 
@@ -56,32 +49,26 @@ namespace LuongMinhPhuMVC.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("CategoryId,CategoryName,CategoryDesciption,ParentCategoryId,IsActive")] Category category)
+        public IActionResult Create([Bind("CategoryId,CategoryName,CategoryDesciption,ParentCategoryId,IsActive")] Category category)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(category);
-                await _context.SaveChangesAsync();
+                _categoryService.AddCategory(category);
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["ParentCategoryId"] = new SelectList(_context.Categories, "CategoryId", "CategoryId", category.ParentCategoryId);
+            ViewData["ParentCategoryId"] = new SelectList(_categoryService.GetCategories(), "CategoryId", "CategoryName", category.ParentCategoryId);
             return View(category);
         }
 
         // GET: Categories/Edit/5
-        public async Task<IActionResult> Edit(short? id)
+        public IActionResult Edit(short? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
-            var category = await _context.Categories.FindAsync(id);
-            if (category == null)
-            {
-                return NotFound();
-            }
-            ViewData["ParentCategoryId"] = new SelectList(_context.Categories, "CategoryId", "CategoryId", category.ParentCategoryId);
+            var category = _categoryService.GetCategoryById(id.Value);
+            if (category == null) return NotFound();
+
+            ViewData["ParentCategoryId"] = new SelectList(_categoryService.GetCategories(), "CategoryId", "CategoryName", category.ParentCategoryId);
             return View(category);
         }
 
@@ -90,23 +77,19 @@ namespace LuongMinhPhuMVC.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(short id, [Bind("CategoryId,CategoryName,CategoryDesciption,ParentCategoryId,IsActive")] Category category)
+        public IActionResult Edit(short id, [Bind("CategoryId,CategoryName,CategoryDesciption,ParentCategoryId,IsActive")] Category category)
         {
-            if (id != category.CategoryId)
-            {
-                return NotFound();
-            }
+            if (id != category.CategoryId) return NotFound();
 
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(category);
-                    await _context.SaveChangesAsync();
+                    _categoryService.UpdateCategory(category);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!CategoryExists(category.CategoryId))
+                    if (!_categoryService.CategoryExists(category.CategoryId))
                     {
                         return NotFound();
                     }
@@ -117,39 +100,28 @@ namespace LuongMinhPhuMVC.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["ParentCategoryId"] = new SelectList(_context.Categories, "CategoryId", "CategoryId", category.ParentCategoryId);
+            ViewData["ParentCategoryId"] = new SelectList(_categoryService.GetCategories(), "CategoryId", "CategoryName", category.ParentCategoryId);
             return View(category);
         }
 
         // GET: Categories/Delete/5
-        public async Task<IActionResult> Delete(short? id)
+        public IActionResult Delete(short? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
-            var category = await _context.Categories
-                .Include(c => c.ParentCategory)
-                .FirstOrDefaultAsync(m => m.CategoryId == id);
-            if (category == null)
-            {
-                return NotFound();
-            }
+            var category = _categoryService.GetCategoryById(id.Value);
+            if (category == null) return NotFound();
 
             return View(category);
         }
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(short id)
+        public IActionResult DeleteConfirmed(short id)
         {
-            var category = await _context.Categories
-                .Include(c => c.NewsArticles)
-                .FirstOrDefaultAsync(c => c.CategoryId == id);
+            var category = _categoryService.GetCategoryById(id);
 
-            if (category == null)
-                return NotFound();
+            if (category == null) return NotFound();
 
             if (category.NewsArticles != null && category.NewsArticles.Any())
             {
@@ -157,15 +129,10 @@ namespace LuongMinhPhuMVC.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            _context.Categories.Remove(category);
-            await _context.SaveChangesAsync();
+            _categoryService.DeleteCategory(id);
 
             return RedirectToAction(nameof(Index));
         }
 
-        private bool CategoryExists(short id)
-        {
-            return _context.Categories.Any(e => e.CategoryId == id);
-        }
     }
 }

@@ -9,11 +9,9 @@ namespace LuongMinhPhuMVC.Controllers
     public class AdminController : Controller
     {
         private readonly INewsArticleService _newsService;
-        private readonly FunewsManagementContext _context;
-        public AdminController(INewsArticleService newsService, FunewsManagementContext context)
+        public AdminController(INewsArticleService newsService)
         {
             _newsService = newsService;
-            _context = context;
         }
         // GET: AdminController
         public ActionResult Index()
@@ -104,21 +102,14 @@ namespace LuongMinhPhuMVC.Controllers
             if (!IsAdmin()) return RedirectToAction("Login", "Account");
             return View();
         }
-        public async Task<IActionResult> Approve(string id)
+        public IActionResult Approve(string id)
         {
             if (!IsAdmin())
                 return RedirectToAction("Login", "Account");
 
-            var news = await _context.NewsArticles.FindAsync(id);
-            if (news == null)
-                return NotFound();
-
-            news.NewsStatus = true; // ✔ Approved
-            news.UpdatedById =
-                (short?)HttpContext.Session.GetInt32("USERID").Value;
-            news.ModifiedDate = DateTime.Now;
-
-            await _context.SaveChangesAsync();
+            var adminId = (short)HttpContext.Session.GetInt32("USERID").Value;
+            _newsService.Approve(id, adminId);
+            
             return RedirectToAction(nameof(Index));
         }
 

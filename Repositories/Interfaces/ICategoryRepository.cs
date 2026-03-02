@@ -10,8 +10,10 @@ namespace Repositories
     public interface ICategoryRepository
     {
         IEnumerable<Category> GetCategories();
+        Category GetCategoryById(short categoryId);
         Category AddCategory(Category category);
         Category UpdateCategory(Category category);
         Category DeleteCategory(short categoryId);
+        bool CategoryExists(short categoryId);
     }
 }

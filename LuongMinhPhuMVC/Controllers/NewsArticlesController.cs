@@ -7,121 +7,80 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Repositories;
+using Services;
 
 namespace LuongMinhPhuMVC.Controllers
 {
     public class NewsArticlesController : Controller
     {
-        private readonly FunewsManagementContext _context;
         private readonly INewsArticleService _newsService;
+        private readonly ICategoryService _categoryService;
+        private readonly ITagRepository _tagRepository;
         private readonly CloudinaryService _cloudinaryService;
 
-        public NewsArticlesController(FunewsManagementContext context, INewsArticleService newsService, CloudinaryService cloudinaryService)
+        public NewsArticlesController(INewsArticleService newsService, CloudinaryService cloudinaryService, ICategoryService categoryService, ITagRepository tagRepository)
         {
-            _context = context;
             _newsService = newsService;
+            _categoryService = categoryService;
+            _tagRepository = tagRepository;
             _cloudinaryService = cloudinaryService;
         }
 
         // GET: NewsArticles
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-            ViewBag.CategoryId = new SelectList(
-        _context.Categories,
-        "CategoryId",
-        "CategoryName"
-    );
-            ViewBag.Tags = new MultiSelectList(
-        _context.Tags.ToList(),
-        "TagId",
-        "TagName"
-    );
-            var funewsManagementContext = _context.NewsArticles
-                .Include(n => n.Category)
-                .Include(n => n.CreatedBy)
-                .Include(n => n.Tags).ToListAsync();
-            return View(await funewsManagementContext);
+            ViewBag.CategoryId = new SelectList(_categoryService.GetCategories(), "CategoryId", "CategoryName");
+            ViewBag.Tags = new MultiSelectList(_tagRepository.GetAll(), "TagId", "TagName");
+            
+            var articles = _newsService.GetAll();
+            return View(articles);
         }
 
         // GET: NewsArticles/Details/5
-        public async Task<IActionResult> Details(string id)
+        public IActionResult Details(string id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
-            var newsArticle = await _context.NewsArticles
-                .Include(n => n.Category)
-                .Include(n => n.CreatedBy)
-                .Include(n => n.Tags)
-                .FirstOrDefaultAsync(m => m.NewsArticleId == id);
-            if (newsArticle == null)
-            {
-                return NotFound();
-            }
+            var newsArticle = _newsService.GetById(id);
+            if (newsArticle == null) return NotFound();
 
             return View(newsArticle);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(
-    [Bind("NewsTitle,Headline,NewsContent,NewsSource,CategoryId")]
-    NewsArticle newsArticle, List<int> selectedTags, IFormFile imageFile)
+        public async Task<IActionResult> Create([Bind("NewsTitle,Headline,NewsContent,NewsSource,CategoryId")] NewsArticle newsArticle, List<int> selectedTags, IFormFile imageFile)
         {
-            if (!IsStaff()) return RedirectToAction("Login", "Account");
+            if (!IsStaffOrLecturer()) return RedirectToAction("Login", "Account");
 
             var userId = HttpContext.Session.GetInt32("USERID");
-            if (userId == null)
-                return RedirectToAction("Login", "Account");
+            if (userId == null) return RedirectToAction("Login", "Account");
 
             if (imageFile != null)
             {
-                var imageUrl = await _cloudinaryService.UploadImageAsync(imageFile);
-                newsArticle.ImageUrl = imageUrl;
+                newsArticle.ImageUrl = await _cloudinaryService.UploadImageAsync(imageFile);
             }
 
             if (ModelState.IsValid)
             {
-                newsArticle.NewsArticleId = Guid.NewGuid().ToString().Substring(0,20); // set string 20 chars
-                newsArticle.ImageUrl = newsArticle.ImageUrl ?? string.Empty; // set empty string if null
+                newsArticle.NewsArticleId = Guid.NewGuid().ToString().Substring(0, 20);
+                newsArticle.ImageUrl = newsArticle.ImageUrl ?? string.Empty;
                 newsArticle.CreatedDate = DateTime.Now;
-                newsArticle.NewsStatus = false; // pending
+                newsArticle.NewsStatus = false;
                 newsArticle.CreatedById = (short)userId.Value;
 
                 if (selectedTags != null && selectedTags.Any())
                 {
-                    var tags = await _context.Tags
-                        .Where(t => selectedTags.Contains(t.TagId))
-                        .ToListAsync();
-
-                    newsArticle.Tags = tags;
+                    newsArticle.Tags = _tagRepository.GetTagsByIds(selectedTags);
                 }
 
                 _newsService.Add(newsArticle);
-
                 return RedirectToAction(nameof(Index));
             }
-            else
-            {
-                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
-                {
-                    Console.WriteLine(error.ErrorMessage);
-                }
-            }
 
-            ViewBag.Tags = new MultiSelectList(
-                _context.Tags.ToList(),
-                "TagId",
-                "TagName",
-                newsArticle.Tags.Select(t => t.TagId)
-            );
-
-            ViewData["CategoryId"] =
-            new SelectList(_context.Categories,
-                "CategoryId", "CategoryDesciption",
-                newsArticle.CategoryId);
+            ViewBag.Tags = new MultiSelectList(_tagRepository.GetAll(), "TagId", "TagName", selectedTags);
+            ViewData["CategoryId"] = new SelectList(_categoryService.GetCategories(), "CategoryId", "CategoryName", newsArticle.CategoryId);
 
             return View(newsArticle);
         }
@@ -130,79 +89,36 @@ namespace LuongMinhPhuMVC.Controllers
 
         public IActionResult Create()
         {
-            if (!IsStaff()) return RedirectToAction("Login", "Account");
+            if (!IsStaffOrLecturer()) return RedirectToAction("Login", "Account");
 
-            ViewData["CategoryId"] =
-                new SelectList(_context.Categories, "CategoryId", "CategoryDesciption");
+            ViewData["CategoryId"] = new SelectList(_categoryService.GetCategories(), "CategoryId", "CategoryName");
+            ViewBag.Tags = new MultiSelectList(_tagRepository.GetAll(), "TagId", "TagName");
 
             return View();
         }
 
-        // GET: NewsArticles/Edit/5
-        public async Task<IActionResult> Edit(string id)
+        public IActionResult Edit(string id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
-            //var newsArticle = await _context.NewsArticles.FindAsync(id);
-            var newsArticle = await _context.NewsArticles
-            .Include(n => n.Tags)
-            .FirstOrDefaultAsync(n => n.NewsArticleId == id);
+            var newsArticle = _newsService.GetById(id);
+            if (newsArticle == null) return NotFound();
 
-            if (newsArticle == null)
-            {
-                return NotFound();
-            }
-            ViewBag.Tags = new MultiSelectList(
-                _context.Tags.ToList(),
-                "TagId",
-                "TagName"
-            );
-
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "CategoryId", "CategoryDesciption", newsArticle.CategoryId);
-            ViewData["CreatedById"] = new SelectList(_context.SystemAccounts, "AccountId", "AccountId", newsArticle.CreatedById);
+            ViewBag.Tags = new MultiSelectList(_tagRepository.GetAll(), "TagId", "TagName", newsArticle.Tags.Select(t => t.TagId));
+            ViewData["CategoryId"] = new SelectList(_categoryService.GetCategories(), "CategoryId", "CategoryName", newsArticle.CategoryId);
+            
             return View(newsArticle);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(
-    string id,
-    [Bind("NewsArticleId,NewsTitle,Headline,NewsContent,NewsSource,CategoryId")]
-    NewsArticle newsArticle, List<int> selectedTags)
+        public IActionResult Edit(string id, [Bind("NewsArticleId,NewsTitle,Headline,NewsContent,NewsSource,CategoryId")] NewsArticle newsArticle, List<int> selectedTags)
         {
-            if (!IsStaff()) return RedirectToAction("Login", "Account");
-
-            //var existing = await _context.NewsArticles.FindAsync(id);
-            var existing = await _context.NewsArticles
-            .Include(n => n.Tags)
-            .FirstOrDefaultAsync(n => n.NewsArticleId == id);
-
+            var userId = HttpContext.Session.GetInt32("USERID");
+            var existing = _newsService.GetById(id);
             if (existing == null) return NotFound();
 
-            if (existing.NewsStatus == true)
-                return Forbid();
-
-            existing.Tags.Clear();
-
-            if (selectedTags != null && selectedTags.Any())
-            {
-                var tags = await _context.Tags
-                    .Where(t => selectedTags.Contains(t.TagId))
-                    .ToListAsync();
-
-                foreach (var tag in tags)
-                {
-                    existing.Tags.Add(tag);
-                }
-            }
-
-
-            if (existing == null) return NotFound();
-
-            if (existing.NewsStatus == true)
+            if (!IsAdmin() && (existing.NewsStatus == true || existing.CreatedById != userId))
                 return Forbid();
 
             if (ModelState.IsValid)
@@ -214,88 +130,68 @@ namespace LuongMinhPhuMVC.Controllers
                 existing.CategoryId = newsArticle.CategoryId;
                 existing.ModifiedDate = DateTime.Now;
 
-                await _context.SaveChangesAsync();
+                existing.Tags.Clear();
+                if (selectedTags != null && selectedTags.Any())
+                {
+                    existing.Tags = _tagRepository.GetTagsByIds(selectedTags);
+                }
+
+                _newsService.Update(existing);
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewData["CategoryId"] =
-                new SelectList(_context.Categories,
-                    "CategoryId", "CategoryName",
-                    newsArticle.CategoryId);
+            ViewBag.Tags = new MultiSelectList(_tagRepository.GetAll(), "TagId", "TagName", selectedTags);
+            ViewData["CategoryId"] = new SelectList(_categoryService.GetCategories(), "CategoryId", "CategoryName", newsArticle.CategoryId);
 
             return View(newsArticle);
         }
 
 
-        // GET: NewsArticles/Delete/5
-        public async Task<IActionResult> Delete(string id)
+        public IActionResult Delete(string id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
-            var newsArticle = await _context.NewsArticles
-                .Include(n => n.Category)
-                .Include(n => n.CreatedBy)
-                .FirstOrDefaultAsync(m => m.NewsArticleId == id);
-            if (newsArticle == null)
-            {
-                return NotFound();
-            }
+            var newsArticle = _newsService.GetById(id);
+            if (newsArticle == null) return NotFound();
 
             return View(newsArticle);
         }
 
-        // POST: NewsArticles/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(string id)
+        public IActionResult DeleteConfirmed(string id)
         {
-            var news = await _context.NewsArticles
-                .Include(n => n.Tags)
-                .FirstOrDefaultAsync(n => n.NewsArticleId == id);
+            var userId = HttpContext.Session.GetInt32("USERID");
+            var existing = _newsService.GetById(id);
+            if (existing == null) return NotFound();
 
-            if (news == null) return NotFound();
-            
-            news.Tags.Clear();
+            if (!IsAdmin() && (existing.NewsStatus == true || existing.CreatedById != userId))
+                return Forbid();
 
-            _context.NewsArticles.Remove(news);
-
-            await _context.SaveChangesAsync();
-
+            _newsService.Delete(id);
             return RedirectToAction(nameof(Index));
         }
 
-        public async Task<IActionResult> Approve(string id)
+        public IActionResult Approve(string id)
         {
             if (!IsAdmin()) return RedirectToAction("Login", "Account");
 
-            var news = await _context.NewsArticles.FindAsync(id);
-            if (news == null) return NotFound();
-
-            news.NewsStatus = true;
-            news.UpdatedById =
-                (short?)HttpContext.Session.GetInt32("USERID").Value;
-            news.ModifiedDate = DateTime.Now;
-
-            await _context.SaveChangesAsync();
+            var adminId = (short)HttpContext.Session.GetInt32("USERID").Value;
+            _newsService.Approve(id, adminId);
+            
             return RedirectToAction(nameof(Index));
         }
-        public async Task<IActionResult> MyNews()
+        public IActionResult MyNews()
         {
             var role = HttpContext.Session.GetInt32("ROLE");
             var userId = HttpContext.Session.GetInt32("USERID");
 
-            if (role != 1 || userId == null)
-                return RedirectToAction("Index", "Home");
+            if (role != 1 || userId == null) return RedirectToAction("Index", "Home");
 
-            var myNews = await _context.NewsArticles
+            var myNews = _newsService.GetAll()
                 .Where(n => n.CreatedById == userId)
-                .Include(n => n.Category)
-                .Include(n => n.Tags)
                 .OrderByDescending(n => n.CreatedDate)
-                .ToListAsync();
+                .ToList();
 
             return View(myNews);
         }
@@ -307,11 +203,20 @@ namespace LuongMinhPhuMVC.Controllers
 
         private bool NewsArticleExists(string id)
         {
-            return _context.NewsArticles.Any(e => e.NewsArticleId == id);
+            return _newsService.GetById(id) != null;
+        }
+        private bool IsStaffOrLecturer()
+        {
+            var role = HttpContext.Session.GetInt32("ROLE");
+            return role == 1 || role == 2;
         }
         private bool IsStaff()
         {
             return HttpContext.Session.GetInt32("ROLE") == 1;
+        }
+        private bool IsLecturer()
+        {
+            return HttpContext.Session.GetInt32("ROLE") == 2;
         }
     }
 }
