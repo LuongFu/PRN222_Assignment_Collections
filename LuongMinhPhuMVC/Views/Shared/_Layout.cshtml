@@ -169,6 +169,19 @@
                     <div style="max-width:500px; width:100%;">
                         @RenderBody()
                     </div>
+
+                    <iframe id="chatbot-iframe"
+                            src="https://gpms-bot-supporter-fe.onrender.com"
+                            style="position: fixed;
+                   bottom: 0;
+                   right: 0;
+                   width: 60px;
+                   height: 60px;
+                   border: none;
+                   z-index: 9999;
+                   border-radius: 50%;
+                   overflow: hidden;">
+                    </iframe>
                 </main>
             }
 
@@ -189,6 +202,7 @@
             </small>
         </div>
     </footer>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

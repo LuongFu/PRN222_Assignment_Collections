@@ -1,5 +1,6 @@
 using BusinessObjects;
 using DataAccessObjects;
+using LuongMinhPhuMVC.NewsHub;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.EntityFrameworkCore;
@@ -56,10 +57,13 @@ builder.Services.AddAuthentication(options =>
     options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
 });
 
+builder.Services.AddSignalR();
+
 builder.Services.AddSession();
 
 var app = builder.Build();
 
+app.MapHub<NewsHub>("/newsHub");
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {

@@ -1,14 +1,14 @@
 ﻿using BusinessObjects;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Repositories;
 using Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Repositories;
-using Services;
 
 namespace LuongMinhPhuMVC.Controllers
 {
@@ -18,13 +18,15 @@ namespace LuongMinhPhuMVC.Controllers
         private readonly ICategoryService _categoryService;
         private readonly ITagRepository _tagRepository;
         private readonly CloudinaryService _cloudinaryService;
+        private readonly IHubContext<NewsHub.NewsHub> _hub;
 
-        public NewsArticlesController(INewsArticleService newsService, CloudinaryService cloudinaryService, ICategoryService categoryService, ITagRepository tagRepository)
+        public NewsArticlesController(INewsArticleService newsService, CloudinaryService cloudinaryService, ICategoryService categoryService, ITagRepository tagRepository, IHubContext<NewsHub.NewsHub> hub)
         {
             _newsService = newsService;
             _categoryService = categoryService;
             _tagRepository = tagRepository;
             _cloudinaryService = cloudinaryService;
+            _hub = hub;
         }
 
         // GET: NewsArticles
@@ -76,6 +78,7 @@ namespace LuongMinhPhuMVC.Controllers
                 }
 
                 _newsService.Add(newsArticle);
+                await _hub.Clients.All.SendAsync("ReloadNews");
                 return RedirectToAction(nameof(Index));
             }
 
@@ -112,7 +115,7 @@ namespace LuongMinhPhuMVC.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(string id, [Bind("NewsArticleId,NewsTitle,Headline,NewsContent,NewsSource,CategoryId")] NewsArticle newsArticle, List<int> selectedTags)
+        public async Task<IActionResult> Edit(string id, [Bind("NewsArticleId,NewsTitle,Headline,NewsContent,NewsSource,CategoryId")] NewsArticle newsArticle, List<int> selectedTags)
         {
             var userId = HttpContext.Session.GetInt32("USERID");
             var existing = _newsService.GetById(id);
@@ -137,6 +140,7 @@ namespace LuongMinhPhuMVC.Controllers
                 }
 
                 _newsService.Update(existing);
+                await _hub.Clients.All.SendAsync("ReloadNews");
                 return RedirectToAction(nameof(Index));
             }
 
@@ -159,7 +163,7 @@ namespace LuongMinhPhuMVC.Controllers
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public IActionResult DeleteConfirmed(string id)
+        public async Task<IActionResult> DeleteConfirmedAsync(string id)
         {
             var userId = HttpContext.Session.GetInt32("USERID");
             var existing = _newsService.GetById(id);
@@ -169,16 +173,17 @@ namespace LuongMinhPhuMVC.Controllers
                 return Forbid();
 
             _newsService.Delete(id);
+            await _hub.Clients.All.SendAsync("ReloadNews");
             return RedirectToAction(nameof(Index));
         }
 
-        public IActionResult Approve(string id)
+        public async Task<IActionResult> Approve(string id)
         {
             if (!IsAdmin()) return RedirectToAction("Login", "Account");
 
             var adminId = (short)HttpContext.Session.GetInt32("USERID").Value;
             _newsService.Approve(id, adminId);
-            
+            await _hub.Clients.All.SendAsync("ReloadNews");
             return RedirectToAction(nameof(Index));
         }
         public IActionResult MyNews()
