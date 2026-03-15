@@ -1,4 +1,4 @@
-﻿using BusinessObjects;
+using BusinessObjects;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -21,6 +21,7 @@ namespace DataAccessObjects
             return _context.Categories
                 .Include(c => c.ParentCategory)
                 .Include(c => c.NewsArticles)
+                    .ThenInclude(n => n.Tags)
                 .ToList();
         }
         public Category AddCategory(Category category)
@@ -50,6 +51,7 @@ namespace DataAccessObjects
             return _context.Categories
                 .Include(c => c.ParentCategory)
                 .Include(c => c.NewsArticles)
+                    .ThenInclude(n => n.Tags)
                 .FirstOrDefault(c => c.CategoryId == categoryId);
         }
 

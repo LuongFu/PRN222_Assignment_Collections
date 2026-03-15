@@ -1,0 +1,46 @@
+@model IEnumerable<BusinessObjects.Category>
+
+<li class="nav-item dropdown custom-dropdown">
+    <a class="nav-link dropdown-toggle text-black" href="#" id="newsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="bi bi-newspaper me-1"></i> News
+    </a>
+    <ul class="dropdown-menu shadow animate slideIn" aria-labelledby="newsDropdown">
+        @foreach (var category in Model)
+        {
+            var tags = category.NewsArticles
+                .SelectMany(n => n.Tags)
+                .GroupBy(t => t.TagId)
+                .Select(g => g.First())
+                .ToList();
+
+            if (tags.Any())
+            {
+                <li class="dropdown-submenu">
+                    <a class="dropdown-item dropdown-toggle d-flex justify-content-between align-items-center" 
+                       asp-controller="NewsArticles" asp-action="Index" asp-route-categoryId="@category.CategoryId">
+                        @category.CategoryName
+                        <i class="bi bi-chevron-right small ms-2"></i>
+                    </a>
+                    <ul class="dropdown-menu shadow animate slideIn">
+                        @foreach (var tag in tags)
+                        {
+                            <li>
+                                <a class="dropdown-item" asp-controller="NewsArticles" asp-action="Index" asp-route-tagId="@tag.TagId">
+                                    <i class="bi bi-tag-fill me-2 small text-muted"></i>@tag.TagName
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </li>
+            }
+            else
+            {
+                <li>
+                    <a class="dropdown-item" asp-controller="NewsArticles" asp-action="Index" asp-route-categoryId="@category.CategoryId">
+                        @category.CategoryName
+                    </a>
+                </li>
+            }
+        }
+    </ul>
+</li>

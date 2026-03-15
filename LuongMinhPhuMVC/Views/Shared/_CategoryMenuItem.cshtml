@@ -1,0 +1,31 @@
+@model dynamic
+@{
+    BusinessObjects.Category category = Model.Category;
+    IEnumerable<BusinessObjects.Category> allCategories = Model.AllCategories;
+    var children = allCategories.Where(c => c.ParentCategoryId == category.CategoryId && c.CategoryId != category.CategoryId).ToList();
+}
+
+@if (children.Any())
+{
+    <li class="dropdown-submenu">
+        <a class="dropdown-item dropdown-toggle d-flex justify-content-between align-items-center" 
+           asp-controller="Categories" asp-action="Details" asp-route-id="@category.CategoryId">
+            @category.CategoryName
+            <i class="bi bi-chevron-right small ms-2"></i>
+        </a>
+        <ul class="dropdown-menu shadow animate slideIn">
+            @foreach (var child in children)
+            {
+                @await Html.PartialAsync("_CategoryMenuItem", new { Category = child, AllCategories = allCategories })
+            }
+        </ul>
+    </li>
+}
+else
+{
+    <li>
+        <a class="dropdown-item" asp-controller="Categories" asp-action="Details" asp-route-id="@category.CategoryId">
+            @category.CategoryName
+        </a>
+    </li>
+}

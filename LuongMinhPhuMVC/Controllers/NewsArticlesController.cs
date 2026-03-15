@@ -1,4 +1,4 @@
-﻿using BusinessObjects;
+using BusinessObjects;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.SignalR;
@@ -30,12 +30,25 @@ namespace LuongMinhPhuMVC.Controllers
         }
 
         // GET: NewsArticles
-        public IActionResult Index()
+        public IActionResult Index(short? categoryId, int? tagId)
         {
             ViewBag.CategoryId = new SelectList(_categoryService.GetCategories(), "CategoryId", "CategoryName");
             ViewBag.Tags = new MultiSelectList(_tagRepository.GetAll(), "TagId", "TagName");
             
             var articles = _newsService.GetAll();
+            
+            if (categoryId.HasValue)
+            {
+                articles = articles.Where(a => a.CategoryId == categoryId.Value);
+                ViewBag.FilteredCategory = _categoryService.GetCategoryById(categoryId.Value)?.CategoryName;
+            }
+
+            if (tagId.HasValue)
+            {
+                articles = articles.Where(a => a.Tags.Any(t => t.TagId == tagId.Value));
+                ViewBag.FilteredTag = _tagRepository.GetAll().FirstOrDefault(t => t.TagId == tagId.Value)?.TagName;
+            }
+
             return View(articles);
         }
 

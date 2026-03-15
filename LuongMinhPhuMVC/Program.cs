@@ -58,7 +58,7 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddSignalR();
-
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddSession();
 
 var app = builder.Build();

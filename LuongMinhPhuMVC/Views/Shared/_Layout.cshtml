@@ -1,4 +1,4 @@
-﻿@{
+@{
     var role = Context.Session.GetInt32("ROLE");
     var session = Context.Session.GetInt32("USERID");
 }
@@ -28,16 +28,18 @@
 
                 <div class="collapse navbar-collapse" id="mainNavbar">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link text-black" asp-controller="Home" asp-action="Index">
+                                <i class="bi bi-house-door-fill me-1"></i> Home
+                            </a>
+                        </li>
 
                         @if (session != null)
                         {
+                        @await Component.InvokeAsync("CategoryMenu")
+                        @await Component.InvokeAsync("NewsMenu")
                             @if (role == 0)
                             {
-                                <li class="nav-item">
-                                    <a class="nav-link text-black" asp-controller="Categories" asp-action="Index">
-                                        Category
-                                    </a>
-                                </li>
                                 <li class="nav-item">
                                     <a class="nav-link text-black" asp-controller="Account" asp-action="Index">
                                          Account
@@ -48,27 +50,12 @@
                                          Report
                                     </a>
                                 </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-black" asp-controller="NewsArticles" asp-action="Index">
-                                         News
-                                    </a>
-                                </li>
                             }
 
                             @if (role == 1 || role == 2)
                             {
-                                <li class="nav-item">
-                                    <a class="nav-link text-black" asp-controller="NewsArticles" asp-action="Index">
-                                         News
-                                    </a>
-                                </li>
                                 @if (role == 1)
                                 {
-                                    <li class="nav-item">
-                                        <a class="nav-link text-black" asp-controller="Categories" asp-action="Index">
-                                            Category
-                                        </a>
-                                    </li>
                                     <li class="nav-item">
                                         <a class="nav-link text-black"
                                            asp-controller="NewsArticles"
